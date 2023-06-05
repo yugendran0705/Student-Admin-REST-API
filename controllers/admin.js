@@ -34,12 +34,17 @@ const verifyTokenAdmin = (req, res, next) => {
 
 const createCourse = async (req, res) => {
     const { courseName, courseCode, capacity } = req.body;
-    const response = await Course.create({
-        courseName,
-        courseCode,
-        capacity: parseInt(capacity),
-    });
-    res.status(200).json({ message: "Course Created", response });
+    try {
+        const response = await Course.create({
+            courseName,
+            courseCode,
+            capacity: parseInt(capacity),
+        });
+    }
+    catch (error) {
+        res.status(400).json({ message: "Course already exists" });
+    }
+    res.status(200).json({ message: "Course Created" });
 }
 
 const addStudentRegistration = async (req, res) => {
@@ -77,18 +82,20 @@ const addStudentRegistration = async (req, res) => {
 
 const deleteCourse = async (req, res) => {
     try {
-        const response = await Course.findOneAndDelete(req.body);
-        if (!response) {
-            throw new Error("Course Not Found")
-        }
-        res.status(200).json({ message: "Course Deleted" })
-    } catch (error) {
-        if (error.message == "Course Not Found") {
+        console.log(req.body);
+        const course = await Course.findOne({
+            courseCode: req.body.courseCode,
+            courseName: req.body.courseName
+        });
+        console.log(course);
+        if (!course) {
             res.status(404).json({ message: error.message })
         }
-        else {
-            res.status(500).json({ message: "Internal Server Error" })
-        }
+        await Course.deleteOne({ courseCode: req.body.courseCode, courseName: req.body.courseName });
+        res.status(200).json({ message: "Course Deleted" })
+    }
+    catch (error) {
+        res.status(500).json({ message: "Internal Server Error" })
     }
 }
 
