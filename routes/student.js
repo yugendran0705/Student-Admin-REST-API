@@ -6,14 +6,14 @@ const {
     registerCourse,
     listCourses,
     viewRegisteredCourses,
-    verifyTokenStudent
 } = require("../controllers/student")
+const verifyToken = require('../middlewares/verify')
 
 router.post('/signup', signUp)
 router.post('/login', login)
-router.post('/courses', verifyTokenStudent, registerCourse)
+router.post('/courses', verifyToken, registerCourse)
 
-router.get('/courses', verifyTokenStudent, listCourses)
-router.get('/registeredcourses', verifyTokenStudent, viewRegisteredCourses)
+router.get('/courses', verifyToken, listCourses)
+router.get('/registeredcourses', verifyToken, viewRegisteredCourses)
 
 module.exports = router;

@@ -1,26 +1,26 @@
 const jwt = require('jsonwebtoken');
 const Student = require('../models/Student');
 const Course = require('../models/Course');
-const student = require('../models/Student');
 const { encryptPassword, checkPassword } = require("../utils/encrypt-decrypt")
 
 
 const signUp = async (req, res) => {
     const { register_number, name, password, courses } = req.body;
-    const student = Student.find({ register_number })
-    if (student) {
-        res.status(401).json({ message: "Username already exists" })
-    }
-    else {
-        password = await encryptPassword(password)
-        const newStudent = new Student({
-            register_number,
-            name,
-            password,
-            courses
+    course_list = String(courses).split(",")
+    console.log(course_list)
+    password_hash = await encryptPassword(password)
+    try {
+
+        const response = await Student.create({
+            regno: register_number,
+            name: name,
+            password: password_hash,
+            courses: course_list
         })
-        newStudent.save()
         res.status(200).json({ message: "Student Created" })
+    }
+    catch (error) {
+        res.status(400).json({ message: "Student already exists" })
     }
 }
 
@@ -41,23 +41,6 @@ const login = async (req, res) => {
     }
 }
 
-const verifyTokenStudent = async (req, res, next) => {
-    const token = req.headers['authorization'].split(' ')[1];
-    if (!token) {
-        res.status(401).json({ message: "Token not found" })
-    }
-    else {
-        const decoded = await jwt.verify(token, process.env.JWT_SECRET)
-        if (decoded) {
-            req.student = decoded
-            next()
-        }
-        else {
-            res.status(401).json({ message: "Invalid Token" })
-        }
-    }
-}
-
 const registerCourse = async (req, res) => {
     const { course_id } = req.body;
     const course = await Course.findById(course_id)
@@ -65,13 +48,13 @@ const registerCourse = async (req, res) => {
         res.status(401).json({ message: "Invalid Course ID" })
     }
     else {
-        const student = await Student.findById(req.student.register_number)
+        const student = await Student.findById(req.register_number)
         if (student.courses.includes(course_id)) {
             res.status(401).json({ message: "Course already registered" })
         }
         else {
             student.courses.push(course_id)
-            student.save()
+            Student.findByIdAndUpdate(req.register_number, student)
             res.status(200).json({ message: "Course Registered" })
         }
     }
@@ -83,14 +66,13 @@ const listCourses = async (req, res) => {
 }
 
 const viewRegisteredCourses = async (req, res) => {
-    const student = await Student.findById(req.student.register_number).populate('courses')
+    const student = await Student.findById(req.student.register_number).populate('courses')  // populate() is used to get the details of the courses from the course_id
     res.status(200).json({ courses: student.courses })
 }
 
 module.exports = {
     signUp,
     login,
-    verifyTokenStudent,
     registerCourse,
     listCourses,
     viewRegisteredCourses

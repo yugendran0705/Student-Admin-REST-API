@@ -3,19 +3,14 @@ const router = express.Router();
 const {
     login,
     createCourse,
-    verifyTokenAdmin,
-    addStudentRegistration,
-    removeStudentRegistration,
     deleteCourse
 } = require('../controllers/admin')
+const verifyToken = require('../middlewares/verify')
 
 
 router.post('/login', login)
-router.post('/courses', verifyTokenAdmin, createCourse)
+router.post('/courses', verifyToken, createCourse)
 
-router.patch('/courses', verifyTokenAdmin, addStudentRegistration)
-router.patch('/removecourses', verifyTokenAdmin, removeStudentRegistration)
-
-router.delete('/courses', verifyTokenAdmin, deleteCourse);
+router.delete('/courses', verifyToken, deleteCourse);
 
 module.exports = router;
