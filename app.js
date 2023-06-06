@@ -5,7 +5,7 @@ const connectDB = require("./config/db")
 const student_router = require("./routes/student")
 const admin_router = require("./routes/admin")
 const env = require("./config/dotenv")
-require('express-async-errors');
+
 
 
 app.use(express.json())
