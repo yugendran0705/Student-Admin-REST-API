@@ -16,6 +16,10 @@ const login = async (req, res) => {
 
 const createCourse = async (req, res) => {
     const { courseName, courseCode, capacity } = req.body;
+    if (!courseName || !courseCode || !capacity) {
+        res.status(400).json({ message: "Invalid Input" })
+        return;
+    }
     try {
         const response = await Course.create({
             courseName,
