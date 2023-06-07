@@ -28,7 +28,7 @@ const signUp = async (req, res) => {
         res.status(200).json({ message: "Student Created" })
     }
     catch (error) {
-        res.status(400).json({ message: "Student already exists" })
+        res.status(409).json({ message: "Student already exists" })
     }
 }
 
@@ -41,7 +41,7 @@ const login = async (req, res) => {
     const student = await Student.findOne({ regno: register_number })
 
     if (!student || student.role !== "student") {
-        res.status(401).json({ message: "Invalid Username" })
+        res.status(401).json({ message: "Invalid Register Number" })
     }
     else {
         const flag = checkPassword(String(student.password), String(password))
@@ -73,7 +73,7 @@ const registerCourse = async (req, res) => {
         }
         course_name = course.courseName
         if (student.courses.includes(course_name)) {
-            res.status(401).json({ message: "Course already registered" })
+            res.status(409).json({ message: "Course already registered" })
         }
         else {
             student.courses.push(course_name)
