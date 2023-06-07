@@ -15,7 +15,11 @@ const studentSchema = mongoose.Schema({
     },
     courses: [{
         type: String
-    }]
+    }],
+    role: {
+        type: String,
+        require: true
+    }
 })
 
 module.exports = mongoose.model('Student', studentSchema)
