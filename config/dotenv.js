@@ -1,7 +1,7 @@
 require('dotenv').config();
 module.exports = {
-    JWT_SALT: process.env.JWT_SALT,
+    JWT_SECRET_KEY_ADMIN: process.env.JWT_SECRET_KEY_ADMIN,
+    JWT_SECRET_KEY_STUDENT: process.env.JWT_SECRET_KEY_STUDENT,
     PORT: process.env.PORT,
-    ADMIN_PASSWORD: process.env.ADMIN_PASSWORD,
     MONGO_URI: process.env.MONGO_URI
 }
