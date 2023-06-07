@@ -1,12 +1,12 @@
 const jwt = require('jsonwebtoken');
-const Student = require('../models/Student');
+const Student = require('../models/student');
 const Course = require('../models/Course');
 const { encryptPassword, checkPassword } = require("../utils/encrypt-decrypt")
 
 
 const signUp = async (req, res) => {
-    const { register_number, name, password, courses } = req.body;
-    if (!register_number || !name || !password || !courses) {
+    const { register_number, name, password, courses, role } = req.body;
+    if (!register_number || !name || !password || !courses || !role) {
         res.status(400).json({ message: "Invalid Input" })
         return;
     }
@@ -18,12 +18,12 @@ const signUp = async (req, res) => {
         return;
     }
     try {
-
         const response = await Student.create({
             regno: register_number,
             name: name,
             password: password_hash,
-            courses: course_list
+            courses: course_list,
+            role: role
         })
         res.status(200).json({ message: "Student Created" })
     }
@@ -33,20 +33,20 @@ const signUp = async (req, res) => {
 }
 
 const login = async (req, res) => {
-    const { register_number, password } = req.body;
-    if (!register_number || !password) {
+    const { register_number, password, role } = req.body;
+    if (!register_number || !password || !role) {
         res.status(400).json({ message: "Invalid Input" })
         return;
     }
     const student = await Student.findOne({ regno: register_number })
 
-    if (!student) {
+    if (!student || student.role !== "student") {
         res.status(401).json({ message: "Invalid Username" })
     }
     else {
         const flag = checkPassword(String(student.password), String(password))
         if (flag) {
-            const token = jwt.sign({ register_number, password }, process.env.JWT_SECRET, { expiresIn: '1h' })
+            const token = jwt.sign({ register_number, role }, process.env.JWT_SECRET_KEY_STUDENT, { expiresIn: '1h' })
             res.status(200).json({ token })
         }
         else {
@@ -54,7 +54,6 @@ const login = async (req, res) => {
         }
     }
 }
-
 const registerCourse = async (req, res) => {
     const { course_id, register_number } = req.body;
     if (!course_id || !register_number) {
@@ -68,16 +67,17 @@ const registerCourse = async (req, res) => {
     }
     else {
         const student = await Student.findOne({ regno: register_number })
-        if (!student) {
+        if (!student || student.role !== "student") {
             res.status(401).json({ message: "Invalid Register Number" })
             return;
         }
-        if (student.courses.includes(course_id)) {
+        course_name = course.courseName
+        if (student.courses.includes(course_name)) {
             res.status(401).json({ message: "Course already registered" })
         }
         else {
-            student.courses.push(course_id)
-            Student.findByIdAndUpdate(req.register_number, student)
+            student.courses.push(course_name)
+            await student.save()
             res.status(200).json({ message: "Course Registered" })
         }
     }
@@ -85,13 +85,27 @@ const registerCourse = async (req, res) => {
 
 const listCourses = async (req, res) => {
     const courses = await Course.find()
+    if (courses.length === 0) {
+        res.status(400).json({ message: "No Courses" })
+        return;
+    }
     res.status(200).json({ courses })
 }
 
 const viewRegisteredCourses = async (req, res) => {
     const { register_number } = req.body;
-    const student = await Student.findOne({ regno: register_number }).populate('courses')  // populate() is used to get the details of the courses from the course_id
-    res.status(200).json({ courses: student.courses })
+    if (!register_number) {
+        res.status(400).json({ message: "Invalid Input" })
+        return;
+    }
+    try {
+        const student = await Student.findOne({ regno: register_number }).populate('courses')  // populate() is used to get the details of the courses from the course_id
+        res.status(200).json({ courses: student.courses })
+    }
+    catch (error) {
+        res.status(400).json({ message: "Invalid Register Number" })
+    }
+
 }
 
 module.exports = {
