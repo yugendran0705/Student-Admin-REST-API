@@ -19,10 +19,10 @@ const signup = async (req, res) => {
             role: role,
             name: name
         });
-        res.status(200).json({ message: "Admin Created" })
+        res.status(201).json({ message: "Admin Created" })
     }
     catch (error) {
-        res.status(400).json({ message: "Admin already exists" });
+        res.status(409).json({ message: "Admin already exists" });
     }
 }
 
@@ -48,7 +48,7 @@ const login = async (req, res) => {
         }
     }
     catch (error) {
-        res.status(400).json({ message: error.message })
+        res.status(500).json({ message: "Internal Server Error" })
     }
 }
 
@@ -72,7 +72,7 @@ const createCourse = async (req, res) => {
             res.status(200).json({ message: "Course Created" })
         }
         catch (error) {
-            res.status(400).json({ message: "Course already exists" });
+            res.status(409).json({ message: "Course already exists" });
         }
     }
 }
@@ -91,7 +91,7 @@ const deleteCourse = async (req, res) => {
         try {
             const course = await Course.findOne({ courseCode: courseCode });
             if (!course) {
-                res.status(404).json({ message: error.message })
+                res.status(404).json({ message: "Course not found" })
             }
             await Course.deleteOne({ courseCode: req.body.courseCode, courseName: req.body.courseName });
             res.status(200).json({ message: "Course Deleted" })
