@@ -70,7 +70,7 @@ const createCourse = async (req, res) => {
                 courseCode,
                 capacity: parseInt(capacity),
             });
-            res.status(200).json({ message: "Course Created" })
+            res.status(201).json({ message: "Course Created" })
         }
         catch (error) {
             res.status(409).json({ message: "Course already exists" });
