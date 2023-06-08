@@ -25,7 +25,7 @@ const signUp = async (req, res) => {
             courses: course_list,
             role: role
         })
-        res.status(200).json({ message: "Student Created" })
+        res.status(201).json({ message: "Student Created" })
     }
     catch (error) {
         res.status(409).json({ message: "Student already exists" })
